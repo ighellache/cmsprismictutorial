@@ -66,12 +66,3 @@ export async function getStaticPaths() {
     fallback: false,
   };
 }
-
-//1) complete documentation first (it has the SEO tutorial), host it on vercel
-
-//2) then consider the menu
-////model a menu inside of prismic
-//6 different pages/links
-//navbar?
-//use singleton called menu and add the fields to represent the links, make a request for it and tailwindcss
-//then typescript
