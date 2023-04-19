@@ -1,28 +1,25 @@
-import Image from "next/image";
-import { Inter } from "next/font/google";
 import styles from "@/styles/Home.module.css";
 import { PrismicText, PrismicRichText, SliceZone } from "@prismicio/react";
 import { createClient } from "../prismicio";
 import { components } from "../../slices";
+import { Navigation } from "../../components/Navigation";
 
-const inter = Inter({ subsets: ["latin"] });
-
-export default function Home({ page }) {
+export default function Home({ navigation, page }) {
+  // console.log("this is page", page);
+  // console.log("this is navigation", navigation);
   return (
     <>
-      <h1 className={styles.title}>
-        <PrismicText field={page.data.greeting} />
-      </h1>
+      <Navigation navigation={navigation} classname={styles.description} />
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
+        <h1>
           <PrismicText field={page.data.greeting} />
         </h1>
 
-        <div className={styles.description}>
+        <div>
           <PrismicRichText field={page.data.description} />
         </div>
-
+        {/* slicezone works by displaying the slices specific to the page you're on*/}
         <SliceZone slices={page.data.slices} components={components} />
       </main>
     </>
@@ -34,16 +31,22 @@ export default function Home({ page }) {
 // This function fetches the Page document from the CMS.
 // The document is passed to the page as a prop.
 export async function getStaticProps({ params }) {
+  const uid = params.slug?.[params.slug?.length - 1] || "home";
+  // console.log("this is params.path", params.path); //undefined, changes when triggered
   // Client used to fetch CMS content.
   const client = createClient();
 
-  // Page document from the CMS.
-  const uid = params.path?.[params.path?.length - 1] || "home";
-  const page = await client.getByUID("page", uid);
-
-  // Pass the document as prop to our page.
+  const [navigation, page] = await Promise.all([
+    client.getByUID("navigation", "nav"),
+    client.getByUID("page", uid),
+  ]);
+  // console.log("this is page", page); //same as page above
   return {
-    props: { page },
+    props: {
+      navigation,
+      page,
+    },
+    // revalidate: 1,
   };
 }
 
@@ -55,12 +58,14 @@ export async function getStaticPaths() {
 
   // Page documents from the CMS.
   const pages = await client.getAllByType("page");
+  // console.log("pages slug:", pages[0].slugs[0]);
 
   // URL paths for each Page document from the CMS.
+
   return {
     paths: pages.map((page) => ({
       params: {
-        path: page.uid === "home" ? [] : [page.uid],
+        slug: page.uid === "" ? [] : [page.uid],
       },
     })),
     fallback: false,

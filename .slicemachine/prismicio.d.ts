@@ -6,19 +6,59 @@ import type * as prismic from "@prismicio/client";
 type Simplify<T> = {
     [KeyType in keyof T]: T[KeyType];
 };
-/** Content for Page documents */
-interface PageDocumentData {
+/** Content for Navigation documents */
+interface NavigationDocumentData {
     /**
-     * Greeting field in *Page*
+     * Name field in *Navigation*
      *
      * - **Field Type**: Rich Text
      * - **Placeholder**: *None*
-     * - **API ID Path**: page.greeting
+     * - **API ID Path**: navigation.name
      * - **Tab**: Main
      * - **Documentation**: https://prismic.io/docs/core-concepts/rich-text-title
      *
      */
-    greeting: prismicT.RichTextField;
+    name: prismicT.RichTextField;
+    /**
+     * Slice Zone field in *Navigation*
+     *
+     * - **Field Type**: Slice Zone
+     * - **Placeholder**: *None*
+     * - **API ID Path**: navigation.slices[]
+     * - **Tab**: Main
+     * - **Documentation**: https://prismic.io/docs/core-concepts/slices
+     *
+     */
+    slices: prismicT.SliceZone<NavigationDocumentDataSlicesSlice>;
+}
+/**
+ * Slice for *Navigation → Slice Zone*
+ *
+ */
+type NavigationDocumentDataSlicesSlice = NavigationItemSlice;
+/**
+ * Navigation document from Prismic
+ *
+ * - **API ID**: `navigation`
+ * - **Repeatable**: `true`
+ * - **Documentation**: https://prismic.io/docs/core-concepts/custom-types
+ *
+ * @typeParam Lang - Language API ID of the document.
+ */
+export type NavigationDocument<Lang extends string = string> = prismicT.PrismicDocumentWithUID<Simplify<NavigationDocumentData>, "navigation", Lang>;
+/** Content for Page documents */
+interface PageDocumentData {
+    /**
+     * Slug field in *Page*
+     *
+     * - **Field Type**: Rich Text
+     * - **Placeholder**: *None*
+     * - **API ID Path**: page.slug
+     * - **Tab**: Main
+     * - **Documentation**: https://prismic.io/docs/core-concepts/rich-text-title
+     *
+     */
+    slug: prismicT.RichTextField;
     /**
      * Description field in *Page*
      *
@@ -46,7 +86,7 @@ interface PageDocumentData {
  * Slice for *Page → Slice Zone*
  *
  */
-type PageDocumentDataSlicesSlice = TextSlice | LinkCardsSlice;
+type PageDocumentDataSlicesSlice = TextSlice | LinkCardsSlice | NavigationItemSlice | TestSlice;
 /**
  * Page document from Prismic
  *
@@ -57,19 +97,7 @@ type PageDocumentDataSlicesSlice = TextSlice | LinkCardsSlice;
  * @typeParam Lang - Language API ID of the document.
  */
 export type PageDocument<Lang extends string = string> = prismicT.PrismicDocumentWithUID<Simplify<PageDocumentData>, "page", Lang>;
-/** Content for Test documents */
-type TestDocumentData = Record<string, never>;
-/**
- * Test document from Prismic
- *
- * - **API ID**: `test`
- * - **Repeatable**: `true`
- * - **Documentation**: https://prismic.io/docs/core-concepts/custom-types
- *
- * @typeParam Lang - Language API ID of the document.
- */
-export type TestDocument<Lang extends string = string> = prismicT.PrismicDocumentWithoutUID<Simplify<TestDocumentData>, "test", Lang>;
-export type AllDocumentTypes = PageDocument | TestDocument;
+export type AllDocumentTypes = NavigationDocument | PageDocument;
 /**
  * Item in LinkCards → Items
  *
@@ -130,54 +158,119 @@ type LinkCardsSliceVariation = LinkCardsSliceDefault;
  */
 export type LinkCardsSlice = prismicT.SharedSlice<"link_cards", LinkCardsSliceVariation>;
 /**
- * Primary content in TestforTest → Primary
+ * Primary content in NavigationItem → Primary
  *
  */
-interface TestforTestSliceDefaultPrimary {
+interface NavigationItemSliceDefaultPrimary {
     /**
-     * Title field in *TestforTest → Primary*
-     *
-     * - **Field Type**: Title
-     * - **Placeholder**: This is where it all begins...
-     * - **API ID Path**: testfor_test.primary.title
-     * - **Documentation**: https://prismic.io/docs/core-concepts/rich-text-title
-     *
-     */
-    title: prismicT.TitleField;
-    /**
-     * Description field in *TestforTest → Primary*
+     * Name field in *NavigationItem → Primary*
      *
      * - **Field Type**: Rich Text
-     * - **Placeholder**: A nice description of your feature
-     * - **API ID Path**: testfor_test.primary.description
+     * - **Placeholder**: *None*
+     * - **API ID Path**: navigation_item.primary.name
      * - **Documentation**: https://prismic.io/docs/core-concepts/rich-text-title
      *
      */
-    description: prismicT.RichTextField;
+    name: prismicT.RichTextField;
+    /**
+     * Link field in *NavigationItem → Primary*
+     *
+     * - **Field Type**: Link
+     * - **Placeholder**: *None*
+     * - **API ID Path**: navigation_item.primary.link
+     * - **Documentation**: https://prismic.io/docs/core-concepts/link-content-relationship
+     *
+     */
+    link: prismicT.LinkField;
 }
 /**
- * Default variation for TestforTest Slice
+ * Item in NavigationItem → Items
+ *
+ */
+export interface NavigationItemSliceDefaultItem {
+    /**
+     * Child Name field in *NavigationItem → Items*
+     *
+     * - **Field Type**: Rich Text
+     * - **Placeholder**: *None*
+     * - **API ID Path**: navigation_item.items[].child_name
+     * - **Documentation**: https://prismic.io/docs/core-concepts/rich-text-title
+     *
+     */
+    child_name: prismicT.RichTextField;
+    /**
+     * Child Link field in *NavigationItem → Items*
+     *
+     * - **Field Type**: Link
+     * - **Placeholder**: *None*
+     * - **API ID Path**: navigation_item.items[].child_link
+     * - **Documentation**: https://prismic.io/docs/core-concepts/link-content-relationship
+     *
+     */
+    child_link: prismicT.LinkField;
+}
+/**
+ * Default variation for NavigationItem Slice
  *
  * - **API ID**: `default`
- * - **Description**: `TestforTest`
+ * - **Description**: `NavigationItem`
  * - **Documentation**: https://prismic.io/docs/core-concepts/reusing-slices
  *
  */
-export type TestforTestSliceDefault = prismicT.SharedSliceVariation<"default", Simplify<TestforTestSliceDefaultPrimary>, never>;
+export type NavigationItemSliceDefault = prismicT.SharedSliceVariation<"default", Simplify<NavigationItemSliceDefaultPrimary>, Simplify<NavigationItemSliceDefaultItem>>;
 /**
- * Slice variation for *TestforTest*
+ * Slice variation for *NavigationItem*
  *
  */
-type TestforTestSliceVariation = TestforTestSliceDefault;
+type NavigationItemSliceVariation = NavigationItemSliceDefault;
 /**
- * TestforTest Shared Slice
+ * NavigationItem Shared Slice
  *
- * - **API ID**: `testfor_test`
- * - **Description**: `TestforTest`
+ * - **API ID**: `navigation_item`
+ * - **Description**: `NavigationItem`
  * - **Documentation**: https://prismic.io/docs/core-concepts/reusing-slices
  *
  */
-export type TestforTestSlice = prismicT.SharedSlice<"testfor_test", TestforTestSliceVariation>;
+export type NavigationItemSlice = prismicT.SharedSlice<"navigation_item", NavigationItemSliceVariation>;
+/**
+ * Primary content in Test → Primary
+ *
+ */
+interface TestSliceDefaultPrimary {
+    /**
+     * Image field in *Test → Primary*
+     *
+     * - **Field Type**: Image
+     * - **Placeholder**: *None*
+     * - **API ID Path**: test.primary.image
+     * - **Documentation**: https://prismic.io/docs/core-concepts/image
+     *
+     */
+    image: prismicT.ImageField<never>;
+}
+/**
+ * Default variation for Test Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: `Test`
+ * - **Documentation**: https://prismic.io/docs/core-concepts/reusing-slices
+ *
+ */
+export type TestSliceDefault = prismicT.SharedSliceVariation<"default", Simplify<TestSliceDefaultPrimary>, never>;
+/**
+ * Slice variation for *Test*
+ *
+ */
+type TestSliceVariation = TestSliceDefault;
+/**
+ * Test Shared Slice
+ *
+ * - **API ID**: `test`
+ * - **Description**: `Test`
+ * - **Documentation**: https://prismic.io/docs/core-concepts/reusing-slices
+ *
+ */
+export type TestSlice = prismicT.SharedSlice<"test", TestSliceVariation>;
 /**
  * Primary content in Text → Primary
  *
@@ -222,6 +315,6 @@ declare module "@prismicio/client" {
         (repositoryNameOrEndpoint: string, options?: prismic.ClientConfig): prismic.Client<AllDocumentTypes>;
     }
     namespace Content {
-        export type { PageDocumentData, PageDocumentDataSlicesSlice, PageDocument, TestDocumentData, TestDocument, AllDocumentTypes, LinkCardsSliceDefaultItem, LinkCardsSliceDefault, LinkCardsSliceVariation, LinkCardsSlice, TestforTestSliceDefaultPrimary, TestforTestSliceDefault, TestforTestSliceVariation, TestforTestSlice, TextSliceDefaultPrimary, TextSliceDefault, TextSliceVariation, TextSlice };
+        export type { NavigationDocumentData, NavigationDocumentDataSlicesSlice, NavigationDocument, PageDocumentData, PageDocumentDataSlicesSlice, PageDocument, AllDocumentTypes, LinkCardsSliceDefaultItem, LinkCardsSliceDefault, LinkCardsSliceVariation, LinkCardsSlice, NavigationItemSliceDefaultPrimary, NavigationItemSliceDefaultItem, NavigationItemSliceDefault, NavigationItemSliceVariation, NavigationItemSlice, TestSliceDefaultPrimary, TestSliceDefault, TestSliceVariation, TestSlice, TextSliceDefaultPrimary, TextSliceDefault, TextSliceVariation, TextSlice };
     }
 }
