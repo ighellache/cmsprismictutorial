@@ -65,7 +65,7 @@ export async function getStaticPaths() {
   return {
     paths: pages.map((page) => ({
       params: {
-        slug: page.uid === "" ? [] : [page.uid],
+        slug: page.uid === "home" ? [] : [page.uid],
       },
     })),
     fallback: false,
